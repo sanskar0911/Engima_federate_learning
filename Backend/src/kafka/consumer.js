@@ -81,8 +81,9 @@ export const simulateFederatedTrainingDirect = (options = {}) => {
 
 export const processAlertDirect = async ({ tx, result }) => {
   try {
-    // Save Alert in DB
-    const alert = await Alert.create({
+    // Save Alert in DB if connected
+    let alert = {
+      _id: `alert-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       transactionId: tx.transactionId,
       accountId: tx.senderId,
       fraudScore: result.fraudScore,
@@ -94,27 +95,32 @@ export const processAlertDirect = async ({ tx, result }) => {
         status: result.status,
         decisionId: result.decisionId
       }
-    });
+    };
+    try {
+      alert = await Alert.create(alert);
+    } catch (_) {}
 
     console.log("🚨 FRAUD ALERT GENERATED:", alert.transactionId);
     
     // Auto-create case if BLOCKED and HIGH risk
     if (result.status === "BLOCKED" || result.riskLevel === "HIGH") {
       const caseId = `CASE-AUTO-${Date.now()}`;
-      await InvestigationCase.create({
-        caseId,
-        title: `Auto-investigation for Tx ${tx.transactionId}`,
-        alertId: alert._id,
-        transactionId: tx.transactionId,
-        status: "OPEN",
-        resolution: "PENDING"
-      });
-      console.log("📁 AUTO-CASE CREATED:", caseId);
+      try {
+        await InvestigationCase.create({
+          caseId,
+          title: `Auto-investigation for Tx ${tx.transactionId}`,
+          alertId: alert._id,
+          transactionId: tx.transactionId,
+          status: "OPEN",
+          resolution: "PENDING"
+        });
+        console.log("📁 AUTO-CASE CREATED:", caseId);
+      } catch (_) {}
     }
 
     // Push alert via websocket
     const io = getIO();
-    if(io) io.emit("new-alert", alert);
+    if (io) io.emit("new-alert", alert);
   } catch (err) {
     console.error("❌ alertConsumer Error:", err);
   }
@@ -156,15 +162,17 @@ export const processTransactionDirect = async (tx) => {
       decisionId: decisionResult.decisionId
     };
 
-    // Save transaction to DB
-    await Transaction.create({ 
-       ...tx, 
-       fraudScore: decisionResult.score,
-       riskLevel: decisionResult.level,
-       reason: decisionResult.reason,
-       status: finalStatus,
-       decisionId: decisionResult.decisionId
-    });
+    // Save transaction to DB if connected
+    try {
+      await Transaction.create({ 
+         ...tx, 
+         fraudScore: decisionResult.score,
+         riskLevel: decisionResult.level,
+         reason: decisionResult.reason,
+         status: finalStatus,
+         decisionId: decisionResult.decisionId
+      });
+    } catch (_) {}
 
     // Forward to frontend via socket
     const io = getIO();

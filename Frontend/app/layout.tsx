@@ -3,12 +3,13 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/react'
 import { ThemeProvider } from '@/components/theme-provider'
+import { AuthProvider } from '@/contexts/AuthContext'
 import { Toaster } from 'sonner'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'FraudShield - AI Fund Flow Fraud Detection',
-  description: 'AI-powered fraud detection system for monitoring and analyzing suspicious financial transactions',
+  title: 'FedShield - Federated Financial Risk Control',
+  description: 'Decentralized cross-institution fraud detection system with Differential Privacy and DPDP Act compliance',
 }
 
 export default function RootLayout({
@@ -25,8 +26,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster />
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
         <Analytics />
       </body>

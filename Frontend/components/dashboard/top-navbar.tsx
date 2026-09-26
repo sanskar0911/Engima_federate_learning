@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
-import { Bell, Search, Moon, Sun, User, AlertTriangle } from "lucide-react"
+import { Bell, Search, Moon, Sun, User, AlertTriangle, LogOut, Check, Building2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useAuth, DEMO_PERSONAS } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +21,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 export function TopNavbar() {
   const { theme, setTheme } = useTheme()
   const router = useRouter()
+  const { user, logout, switchPersona, isAuthenticated } = useAuth()
   const [mounted, setMounted] = useState(false)
   const [alerts, setAlerts] = useState<any[]>([])
   const [highRiskAccounts, setHighRiskAccounts] = useState<any[]>([])
@@ -134,30 +137,83 @@ export function TopNavbar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* User menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 px-2">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-blue-600 text-white">
-                  <User className="h-4 w-4" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="hidden flex-col items-start md:flex">
-                <span className="text-sm font-medium">Alex Chen</span>
-                <span className="text-xs text-muted-foreground">Fraud Analyst</span>
+        {/* User menu / Authentication */}
+        {isAuthenticated && user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-2.5 px-2 h-10 hover:bg-muted/60">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className={`${user.avatarColor || "bg-primary"} text-white font-semibold text-xs`}>
+                    {user.avatarInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden flex-col items-start md:flex text-left">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-semibold leading-tight text-foreground">{user.name}</span>
+                    {user.bankId && (
+                      <Badge variant="outline" className="text-[9px] px-1 py-0 border-primary/40 text-primary">
+                        {user.bankId}
+                      </Badge>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-muted-foreground leading-tight truncate max-w-[140px]">
+                    {user.roleLabel}
+                  </span>
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64 p-1.5">
+              <div className="px-2 py-2">
+                <p className="text-xs font-semibold text-foreground">{user.name}</p>
+                <p className="text-[11px] text-muted-foreground">{user.email}</p>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <Badge variant="secondary" className="text-[10px] font-normal">
+                    {user.institution}
+                  </Badge>
+                </div>
               </div>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Log out</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1">
+                Switch Institutional Persona
+              </DropdownMenuLabel>
+              {DEMO_PERSONAS.map((p) => {
+                const isCurrent = user.id === p.id
+                return (
+                  <DropdownMenuItem
+                    key={p.id}
+                    onClick={() => switchPersona(p.id)}
+                    className="flex items-center justify-between text-xs py-1.5 px-2 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2 w-2 rounded-full ${p.avatarColor}`} />
+                      <div>
+                        <p className="font-medium text-foreground">{p.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{p.roleLabel}</p>
+                      </div>
+                    </div>
+                    {isCurrent && <Check className="h-3.5 w-3.5 text-primary" />}
+                  </DropdownMenuItem>
+                )
+              })}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={logout}
+                className="text-xs text-destructive focus:text-destructive cursor-pointer py-1.5 px-2 flex items-center gap-2"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button
+            size="sm"
+            onClick={() => router.push("/login")}
+            className="text-xs h-8 gap-1.5 bg-primary text-primary-foreground"
+          >
+            <User className="h-3.5 w-3.5" /> Sign In
+          </Button>
+        )}
       </div>
     </header>
   )

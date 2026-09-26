@@ -21,6 +21,9 @@ import simulationRoutes from "./routes/simulationRoutes.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
 import graphRoutes from "./routes/graphRoutes.js";
+import federatedRoutes from "./routes/federatedRoutes.js";
+import healthRoutes from "./routes/healthRoutes.js";
+import auditRoutes from "./routes/auditRoutes.js";
 
 dotenv.config();
 
@@ -37,17 +40,17 @@ app.use(helmet());
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-// Rate Limiting to prevent basic DDoS and endpoint abuse
+// Rate Limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 500,
   message: "Too many requests from this IP, please try again after 15 minutes.",
 });
 app.use("/api/", limiter);
 
 // ================= SERVER + SOCKET =================
 const server = http.createServer(app);
-initSocket(server); // attach the websocket engine globally via our module
+initSocket(server);
 
 // ================= ROUTES =================
 app.use("/api/transactions", transactionRoutes);
@@ -58,6 +61,9 @@ app.use("/api/simulation", simulationRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/graph", graphRoutes);
+app.use("/api/federated", federatedRoutes);
+app.use("/api/health", healthRoutes);
+app.use("/api/audit", auditRoutes);
 
 // ================= ERROR HANDLING MIDDLEWARE =================
 app.use((err, req, res, next) => {
@@ -71,12 +77,10 @@ app.use((err, req, res, next) => {
 // ================= START EVERYTHING =================
 const startServer = async () => {
   try {
-    console.log("🚀 Starting services...");
+    console.log("🚀 Starting FedShield services...");
 
-    // ✅ Connect DB
     await connectDB();
 
-    // 🔥 Start Kafka Services explicitly and gracefully
     await startProducer();
     await startConsumer();
 
@@ -84,10 +88,21 @@ const startServer = async () => {
 
     const PORT = process.env.PORT || 5000;
 
-    server.listen(PORT, () => {
-      console.log(`🚀 Production Server running on port ${PORT}`);
+    server.listen(PORT, async () => {
+      console.log(`🚀 FedShield Server running on port ${PORT}`);
       console.log(`📡 WebSocket Engine Ready`);
-      console.log(`🎬 Run Live Simulation via: POST http://localhost:${PORT}/api/simulation/start`);
+      console.log(`🛡️  Federated API: /api/federated`);
+      console.log(`❤️  Health API: /api/health`);
+      console.log(`📋 Audit API: /api/audit`);
+
+      // Initialize bank nodes on startup
+      try {
+        const bankNodeService = (await import("./services/bankNodeService.js")).default;
+        await bankNodeService.initializeDefaultBanks();
+        console.log("🏦 Bank nodes initialized (BANK-A, BANK-B, BANK-C)");
+      } catch (e) {
+        console.error("Bank node init error (non-fatal):", e.message);
+      }
     });
 
   } catch (error) {

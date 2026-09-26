@@ -1,72 +1,72 @@
 import { getIO } from "../socket/socket.js";
-import { analyzeTransaction } from "./fraudDetectionService.js";
 import { produceTransaction } from "../kafka/producer.js";
+import datasetService from "./datasetService.js";
 
 let simulationInterval = null;
 let mode = "normal"; // normal or attack
+const BANKS = ["BANK-A", "BANK-B", "BANK-C"];
 
-// 🔥 Random amount generator
-const randomAmount = () => mode === "attack" ? Math.floor(Math.random() * 100000) : Math.floor(Math.random() * 5000);
-
-// 🔥 Generate single random transaction
-const generateTransaction = () => ({
-  transactionId: `TXN-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-  senderId: "ACC" + Math.floor(Math.random() * 20), // smaller pool to induce cycle chances
-  receiverId: "ACC" + Math.floor(Math.random() * 20),
-  amount: randomAmount(),
-  timestamp: new Date()
-});
-
-// 🔥 FRAUD PATTERNS (Fixed for demo execution)
-const generateFraudPatterns = () => {
-  const ts = Date.now();
-  return [
-    // 🔴 Circular Fraud
-    { transactionId: `TXN-${ts}-1`, senderId: "A1", receiverId: "A2", amount: randomAmount(), timestamp: new Date() },
-    { transactionId: `TXN-${ts}-2`, senderId: "A2", receiverId: "A3", amount: randomAmount(), timestamp: new Date() },
-    { transactionId: `TXN-${ts}-3`, senderId: "A3", receiverId: "A1", amount: randomAmount(), timestamp: new Date() },
-
-    // 🟠 Smurfing
-    { transactionId: `TXN-${ts}-4`, senderId: "A4", receiverId: "A5", amount: 9000, timestamp: new Date() },
-    { transactionId: `TXN-${ts}-5`, senderId: "A4", receiverId: "A5", amount: 9500, timestamp: new Date() },
-    { transactionId: `TXN-${ts}-6`, senderId: "A4", receiverId: "A5", amount: 8700, timestamp: new Date() },
-
-    // 🟡 Large suspicious
-    { transactionId: `TXN-${ts}-7`, senderId: "A2", receiverId: "A5", amount: 120000, timestamp: new Date() },
-
-    // 🟢 Fan-out burst (11 transactions from same source to unique receivers)
-    ...Array.from({ length: 11 }).map((_, i) => ({
-      transactionId: `TXN-${ts}-fan-${i}`,
-      senderId: "FO_SENDER_1",
-      receiverId: `FO_RECEIVER_${i}`,
-      amount: 1500,
-      timestamp: new Date()
-    })),
-  ];
+export const switchMode = (newMode) => {
+  mode = newMode;
+  console.log(`[LiveSimulation] Mode switched to: ${mode}`);
+  return mode;
 };
+export const setSimulationMode = switchMode;
 
-export const startSimulation = () => {
+export const startSimulation = (intervalMs = 2500) => {
   if (simulationInterval) return;
-  console.log("🎬 Live simulation started.");
-  
+  console.log("🎬 Live dataset-driven simulation started.");
+
   simulationInterval = setInterval(async () => {
-    // We send data through Kafka to simulate a real-world pipeline
     try {
+      const bankId = BANKS[Math.floor(Math.random() * BANKS.length)];
+
       if (mode === "attack") {
-        const patterns = generateFraudPatterns();
-        for (const tx of patterns) {
+        // Sample real fraudulent patterns directly from the bank's dataset
+        const fraudSamples = datasetService.sampleRecords(bankId, 3, { isFraud: true });
+        for (const rawTx of fraudSamples) {
+          const tx = {
+            transactionId: rawTx.transactionId,
+            senderId: rawTx.accountId,
+            receiverId: rawTx.receiverId,
+            amount: rawTx.amount,
+            bankId: rawTx.bankId,
+            channel: rawTx.channel,
+            merchant: rawTx.merchant,
+            location: rawTx.location,
+            deviceId: rawTx.deviceId,
+            isCrossBank: rawTx.is_cross_bank === 1,
+            fraudPattern: rawTx.fraudPattern,
+            timestamp: new Date(),
+          };
           await produceTransaction(tx);
         }
-        // Force switch back to normal to avoid spamming the DB forever
-        mode = "normal";
+        mode = "normal"; // return to normal baseline after burst
       } else {
-        const tx = generateTransaction();
-        await produceTransaction(tx);
+        // Sample real normal transactions directly from the bank's dataset
+        const normalSamples = datasetService.sampleRecords(bankId, 1, { isFraud: false });
+        if (normalSamples.length > 0) {
+          const rawTx = normalSamples[0];
+          const tx = {
+            transactionId: rawTx.transactionId,
+            senderId: rawTx.accountId,
+            receiverId: rawTx.receiverId,
+            amount: rawTx.amount,
+            bankId: rawTx.bankId,
+            channel: rawTx.channel,
+            merchant: rawTx.merchant,
+            location: rawTx.location,
+            deviceId: rawTx.deviceId,
+            isCrossBank: rawTx.is_cross_bank === 1,
+            timestamp: new Date(),
+          };
+          await produceTransaction(tx);
+        }
       }
     } catch (err) {
-      console.error("Simulation error:", err);
+      console.error("[LiveSimulation] Error streaming transaction from dataset:", err.message);
     }
-  }, 3000); // 1 transaction every 3 seconds
+  }, intervalMs);
 };
 
 export const stopSimulation = () => {
@@ -77,8 +77,4 @@ export const stopSimulation = () => {
   }
 };
 
-export const switchMode = (newMode) => {
-  mode = newMode;
-  console.log(`🔄 Simulation mode switched to: ${mode}`);
-  return mode;
-};
+export const isSimulationRunning = () => simulationInterval !== null;
