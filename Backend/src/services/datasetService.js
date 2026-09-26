@@ -120,9 +120,7 @@ class DatasetService {
       const fraudList = [];
       const normalList = [];
 
-      // Load up to 10,000 real records per bank into active working memory
-      const maxRows = Math.min(lines.length, 12000);
-
+      // Scan all lines in the node CSV to capture 100% of all real laundering cases
       for (let i = 1; i < lines.length; i++) {
         const parts = lines[i].split(",");
         if (parts.length < headers.length) continue;
@@ -160,13 +158,13 @@ class DatasetService {
           is_cross_bank: isCrossBank,
           currency_mismatch: isCurrencyMismatch,
           timestamp: timestamp,
-          fraudScore: isLaundering === 1 ? 94 : isCrossBank ? 48 : 14,
+          fraudScore: isLaundering === 1 ? (85 + (i % 15)) : isCrossBank ? 48 : 14,
           riskLevel: isLaundering === 1 ? "HIGH" : isCrossBank ? "MEDIUM" : "LOW",
           reason: isLaundering === 1 
-            ? "Smurfing / Structuring Laundering Cycle Detected" 
+            ? "Smurfing / Structuring Laundering Cycle Detected (IBM AML Flagged)" 
             : isCrossBank 
             ? "Inter-Bank Settlement Hop" 
-            : "Routine Internal Transfer",
+            : "Routine Internal Settlement",
         };
 
         if (isLaundering === 1) {
@@ -174,15 +172,28 @@ class DatasetService {
         } else if (normalList.length < 5000) {
           normalList.push(txObj);
         }
+      }
 
-        if (records.length < maxRows) {
-          records.push(txObj);
+      // Interleave real laundering cases with normal transactions so laundering cases are prominently visible
+      const records = [];
+      let fIdx = 0;
+      let nIdx = 0;
+
+      while (nIdx < normalList.length || fIdx < fraudList.length) {
+        // Place 1 real laundering case every 3 normal transactions
+        if (fIdx < fraudList.length && (records.length % 4 === 0 || nIdx >= normalList.length)) {
+          records.push(fraudList[fIdx++]);
+        } else if (nIdx < normalList.length) {
+          records.push(normalList[nIdx++]);
+        } else if (fIdx < fraudList.length) {
+          records.push(fraudList[fIdx++]);
         }
       }
 
       this.bankCache.set(bankKey, records);
       this.fraudPoolCache.set(bankKey, fraudList);
       this.normalPoolCache.set(bankKey, normalList);
+      console.log(`🏦 [DatasetService] Loaded ${meta.name} (${bankKey}): ${records.length} records with ${fraudList.length} real laundering cases indexed.`);
     } catch (e) {
       console.error(`Failed to load ${meta.file}:`, e.message);
     }
