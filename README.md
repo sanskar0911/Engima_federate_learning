@@ -1,310 +1,55 @@
-# 🚀 AI-Powered Real-Time Fraud Detection System  
-### *Pre-Transaction Adaptive Intelligence Platform*
+# 🏦 Privacy-Preserving Federated Learning for Banking Fraud Detection
+
+> A privacy-preserving fraud detection architecture that enables multiple financial organizations to collaboratively improve machine-learning models without sharing their raw customer transaction data.
 
 ---
 
 ## 📌 Overview
 
-This project is a **next-generation real-time fraud detection and prevention system** that identifies and stops fraudulent financial transactions **before they are executed**.
+Traditional fraud detection systems usually require large amounts of transaction data to train a centralized machine-learning model.
 
-It combines **stream processing, graph intelligence, behavioral analytics, and adaptive learning** to deliver **instant, explainable, and scalable fraud protection**.
+However, financial data is highly sensitive. Sharing raw customer transactions between banks, lenders, insurers, or a central server can create significant privacy and security concerns.
 
----
+This project proposes a **Federated Learning (FL)-based fraud detection system** where each organization keeps its raw data inside its own secure environment.
 
-## 🎯 Key Objectives
+Instead of sending raw data to a central server:
 
-- 🚫 Prevent fraud **before transaction completion**
-- 🔍 Detect **complex & coordinated fraud networks**
-- 🧠 Provide **explainable AI-based risk scoring**
-- ⚡ Enable **real-time automated decisions**
-- 📈 Continuously improve using **adaptive learning**
+1. A global machine-learning model is distributed to participating clients.
+2. Each organization trains the model locally using its own historical data.
+3. Privacy mechanisms are applied to the model updates.
+4. Only model updates/weight differences are sent to the central federated coordinator.
+5. The coordinator aggregates updates from participating clients.
+6. A new global model is generated.
+7. The updated model is distributed again.
 
----
-
-## 🧠 Core Features
-
-### ⚡ Real-Time Fraud Detection
-- Kafka-powered transaction streaming
-- Low-latency processing pipeline
-- Instant fraud alert generation
+This creates a collaborative learning system while keeping the original transaction data within the organization's environment.
 
 ---
 
-### 🧮 Explainable Risk Scoring Engine
+# 🎯 Objectives
 
-Multi-factor intelligent scoring based on:
+The main objectives of the project are:
 
-- Transaction amount anomaly  
-- Frequency anomaly  
-- Behavioral deviation  
-- Device & location mismatch  
-- Network/fund flow risk  
-
-**Example Output:**
-```json
-{
-  "score": 82,
-  "level": "HIGH",
-  "factors": [
-    { "type": "amount", "reason": "Unusually high transaction" }
-  ]
-}
-```
+- Detect fraudulent financial transactions using machine learning.
+- Keep sensitive transaction data within the organization's infrastructure.
+- Enable multiple organizations to collaboratively train a model.
+- Reduce the need to exchange raw customer data.
+- Apply privacy-preserving techniques to model updates.
+- Support real-time fraud scoring inside the bank's security perimeter.
+- Provide a scalable architecture for federated fraud detection.
+- Separate local data processing from centralized model coordination.
 
 ---
 
-### ⚖️ Pre-Transaction Decision Engine
-
-| Risk Score | Action |
-|-----------|--------|
-| < 30      | ✅ Approve |
-| 30 – 70   | 🔐 Require MFA |
-| > 70      | ❌ Block |
-
----
-
-### 🔗 Graph-Based Fraud Detection
-- Models transactions as **network graphs**
-- Detects:
-  - Circular transactions
-  - Fan-out bursts
-  - Layering (smurfing)
-- Uses **DFS/BFS algorithms**
-
----
-
-### 🧩 Advanced Fraud Pattern Detection
-- Circular fraud loops  
-- Smurfing / layering attacks  
-- Rapid fund fan-out  
-- Sleeper account activation  
-- Cross-bank evasion  
-- Behavioral drift detection  
-
----
-
-### 👤 Behavioral Profiling
-Tracks:
-- Average transaction amount  
-- Transaction frequency  
-- Active hours  
-
-Detects anomalies in real time.
-
----
-
-### 🌐 Device & Context Intelligence
-- Device fingerprinting  
-- IP tracking  
-- Location anomaly detection  
-- Channel awareness (UPI / Bank / Wallet)
-
----
-
-### 🚨 Real-Time Alerts (Socket.IO)
-- Instant alert streaming  
-- Live UI updates (no refresh required)
-
----
-
-### 📁 Investigation Workflow System
-
-**Alert → Case → Investigation → Decision**
-
-- Case management  
-- Analyst notes  
-- Decision tracking  
-
----
-
-### 📊 Dashboard & Visualization
-- Real-time monitoring dashboard  
-- Fraud trends & insights  
-- Risk distribution  
-- Fund flow visualization  
-
----
-
-### 🤖 Adaptive Learning System
-- Learns from analyst feedback  
-- Dynamically improves risk scoring  
-
----
-
-### 🧪 Fraud Simulation Engine
-- Simulate:
-  - Smurfing  
-  - Circular fraud  
-  - Fan-out attacks  
-
----
-
-## 🏗️ System Architecture
-
-```
-User Transaction
-        ↓
-Kafka Producer
-        ↓
-Kafka Topic
-        ↓
-Backend (Node.js Consumer)
-        ↓
-Risk Engine + Pattern Detection
-        ↓
-Decision Engine (Approve / Block / MFA)
-        ↓
-MongoDB
-        ↓
-Socket.IO
-        ↓
-React Dashboard
-```
-
----
-
-## 🛠️ Tech Stack
-
-### Backend
-- Node.js  
-- Express.js  
-
-### Database
-- MongoDB  
-
-### Streaming
-- Apache Kafka  
-
-### Real-Time Communication
-- Socket.IO  
-
-### Frontend
-- React.js  
-
----
-
-## 📂 Project Structure
-
-```
-/backend
-  /models
-  /routes
-  /controllers
-  /services
-    riskEngine.js
-    decisionEngine.js
-    graphService.js
-
-/frontend
-  /components
-  /pages
-
-/kafka
-  producer.js
-  consumer.js
-```
-
----
-
-## 🚀 Getting Started
-
-### 1️⃣ Clone Repository
-```bash
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
-```
-
-### 2️⃣ Install Dependencies
-```bash
-npm install
-cd frontend && npm install
-```
-
-### 3️⃣ Setup Environment Variables
-
-Create `.env` file:
-
-```env
-MONGO_URI=your_mongodb_uri
-KAFKA_BROKER=localhost:9092
-PORT=5000
-```
-
-### 4️⃣ Run the Project
-
-```bash
-# Backend
-npm run dev
-
-# Frontend
-cd frontend
-npm start
-```
-
----
-
-## 📡 API Endpoints
-
-### Transactions
-- `POST /api/transactions/pre-check`
-- `POST /api/transactions`
-
-### Alerts
-- `GET /api/alerts`
-
-### Cases
-- `POST /api/cases`
-- `GET /api/cases`
-
-### Graph
-- `GET /api/graph/:accountId`
-
-### Feedback
-- `POST /api/feedback`
-
----
-
-## 🎯 Use Cases
-
-- Banking fraud detection  
-- UPI fraud prevention  
-- Anti-Money Laundering (AML)  
-- Fintech risk monitoring  
-
----
-
-## 🏆 Highlights
-
-- ⚡ Real-time fraud prevention  
-- 🧠 Explainable AI  
-- 🔗 Graph-based detection  
-- 📊 Investigation workflow  
-- 🔄 Adaptive learning  
-
----
-
-## 🔮 Future Enhancements
-
-- Machine learning models  
-- Advanced graph visualization  
-- Cross-bank fraud detection  
-- Mobile app  
-
----
-
-## 👨‍💻 Contributors
-
-- Sanskar  
-- Pranay  
-
----
-
-## 📜 License
-
-MIT License
-
----
-
-## 💡 Final Note
-
-> “From reactive detection to proactive fraud prevention using real-time intelligence.”
+# 🧠 Key Concept
+
+The project combines four major components:
+
+```text
+Machine Learning
+       +
+Neural Network
+       +
+Federated Learning
+       +
+Privacy Protection
