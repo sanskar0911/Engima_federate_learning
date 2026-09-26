@@ -26,12 +26,12 @@ class DecisionEngine {
 
       // 2. Determine Decision based on thresholds
       let status = 'APPROVE';
-      let reason = 'Transaction looks normal';
+      let reason = 'Transaction verified and approved';
 
-      if (score >= 70) {
+      if (score >= 75) {
         status = 'BLOCK';
-        reason = 'High risk score based on multiple fraud factors';
-      } else if (score >= 30) {
+        reason = 'High risk score based on AML/Fraud indicators';
+      } else if (score >= 45) {
         status = 'REQUIRE_MFA';
         reason = 'Suspicious activity detected, secondary verification required';
       }

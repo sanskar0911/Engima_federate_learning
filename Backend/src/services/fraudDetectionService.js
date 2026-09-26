@@ -11,9 +11,14 @@ export const calculateComprehensiveRisk = async (tx) => {
 
   // ================= 1. BEHAVIORAL RISK =================
   const behavioralRisk = await behavioralProfiler.evaluateDeviation(senderId, amount, deviceId, location);
-  if (behavioralRisk.contribution > 0) {
-    totalScore += behavioralRisk.contribution;
-    factors.push(behavioralRisk);
+  const behContrib = behavioralRisk.contribution || (behavioralRisk.deviationScore ? Math.min(behavioralRisk.deviationScore, 35) : 0);
+  if (behContrib > 0) {
+    totalScore += behContrib;
+    factors.push({
+      type: "behavioral",
+      contribution: behContrib,
+      reason: behavioralRisk.reason || (behavioralRisk.reasons && behavioralRisk.reasons.join(", ")) || "Behavioral anomaly detected"
+    });
   }
 
   // ================= 2. GRAPH / NETWORK RISK =================
@@ -26,12 +31,15 @@ export const calculateComprehensiveRisk = async (tx) => {
   // ================= 3. BASIC RULE RISK =================
   let ruleScore = 0;
   let ruleReasons = [];
-  if (amount > 100000) {
-    ruleScore += 30;
-    ruleReasons.push("Extremely high-value transaction");
-  } else if (amount > 50000) {
+  if (amount > 500000) {
     ruleScore += 15;
-    ruleReasons.push("High-value transaction");
+    ruleReasons.push("High-value institutional transfer (> $500k)");
+  } else if (amount > 100000) {
+    ruleScore += 10;
+    ruleReasons.push("Significant corporate transaction (> $100k)");
+  } else if (amount > 50000) {
+    ruleScore += 5;
+    ruleReasons.push("Moderate transaction amount (> $50k)");
   }
 
   if (ruleScore > 0) {
@@ -58,14 +66,14 @@ export const calculateComprehensiveRisk = async (tx) => {
       0, // placeholder for cross-bank
       avgAmountStr,
     ]);
-    const aiContribution = Math.round(mlScore * 40); // Max 40 points from AI
+    const aiContribution = Math.round(mlScore * 50); // Max 50 points from AI model
     
     if (aiContribution > 0) {
       totalScore += aiContribution;
       factors.push({
         type: "ai_model",
         contribution: aiContribution,
-        reason: `AI model predicted fraud probability of ${(mlScore*100).toFixed(1)}%`
+        reason: `Federated AI model predicted fraud probability of ${(mlScore*100).toFixed(1)}%`
       });
     }
   } catch (err) {
@@ -75,10 +83,13 @@ export const calculateComprehensiveRisk = async (tx) => {
   // Cap score at 100
   let finalScore = Math.min(Math.round(totalScore), 100);
 
-  // Determine Level
+  // Institutional Risk Tiers:
+  // 0 - 44: LOW (Normal / Auto-Approved)
+  // 45 - 74: MEDIUM (Elevated Monitoring / Step-up Auth required)
+  // 75 - 100: HIGH (Critical AML / Fraud Alert Generated)
   let level = "LOW";
-  if (finalScore >= 70) level = "HIGH";
-  else if (finalScore >= 30) level = "MEDIUM";
+  if (finalScore >= 75) level = "HIGH";
+  else if (finalScore >= 45) level = "MEDIUM";
 
   return {
     score: finalScore,

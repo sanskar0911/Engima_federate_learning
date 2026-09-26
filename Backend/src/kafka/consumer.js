@@ -208,7 +208,8 @@ export const processTransactionDirect = async (tx) => {
     const io = getIO();
     if (io) io.emit("new-transaction", { tx, result: legacyResult });
 
-    if (decisionResult.level === "HIGH" || decisionResult.level === "MEDIUM") {
+    // Only trigger FRAUD ALERT if risk level is HIGH (score >= 75 or is_fraud === 1)
+    if (decisionResult.level === "HIGH" || decisionResult.score >= 75 || tx.is_fraud === 1) {
       processAlertDirect({ tx, result: legacyResult });
     }
   } catch (err) {

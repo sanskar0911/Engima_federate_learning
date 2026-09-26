@@ -108,8 +108,12 @@ class BehavioralProfiler {
       reasons.push("High transaction velocity detected for account within 24h window");
     }
 
+    const contribution = Math.min(riskScore, 35);
     return {
+      type: "behavioral",
+      contribution,
       deviationScore: Math.min(riskScore, 100),
+      reason: reasons.join(", ") || "Normal account behavioral profile",
       reasons
     };
   }
