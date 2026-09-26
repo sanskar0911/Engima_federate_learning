@@ -116,7 +116,6 @@ class DatasetService {
       const formatIdx = headers.indexOf("Payment Format");
       const fraudIdx = headers.indexOf("Is Laundering");
 
-      const records = [];
       const fraudList = [];
       const normalList = [];
 
