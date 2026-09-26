@@ -103,13 +103,13 @@ const startServer = async () => {
       console.log(`❤️  Health API: /api/health`);
       console.log(`📋 Audit API: /api/audit`);
 
-      // Initialize bank nodes on startup
+      // Auto-start live dataset transaction streaming into Kafka
       try {
-        const bankNodeService = (await import("./services/bankNodeService.js")).default;
-        await bankNodeService.initializeDefaultBanks();
-        console.log("🏦 Bank nodes initialized (BANK-A, BANK-B, BANK-C)");
+        const { startSimulation } = await import("./services/liveSimulationService.js");
+        startSimulation(2000);
+        console.log("🎬 Real IBM transaction streaming to Kafka active (2s interval)");
       } catch (e) {
-        console.error("Bank node init error (non-fatal):", e.message);
+        console.error("Simulation auto-start error:", e.message);
       }
     });
 

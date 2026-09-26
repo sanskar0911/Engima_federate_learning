@@ -17,7 +17,7 @@ let transactionCache = [];
  * 📡 Process incoming federated model accuracy metrics from Python Flower server
  * Broadcasts directly to connected Frontend clients over WebSockets
  */
-export const processModelMetricDirect = (metricPayload) => {
+export const processModelMetricDirect = async (metricPayload) => {
   try {
     const io = getIO();
     console.log(`📡 [WebSocket Broadcast] Emitting MODEL_METRICS: Round ${metricPayload.round}/${metricPayload.totalRounds || 5} | Accuracy: ${(metricPayload.accuracy * 100).toFixed(1)}% | Epsilon: ${metricPayload.epsilon || 1.2}`);
@@ -26,8 +26,15 @@ export const processModelMetricDirect = (metricPayload) => {
       io.emit("model_metrics", metricPayload);
       io.emit("federated-metrics", metricPayload);
     }
+    // Publish to Kafka topic
+    try {
+      await producer.send({
+        topic: "MODEL_METRICS",
+        messages: [{ value: JSON.stringify(metricPayload) }],
+      });
+    } catch (_) {}
   } catch (err) {
-    console.error("❌ processModelMetricDirect WebSocket Error:", err.message);
+    console.error("❌ processModelMetricDirect Error:", err.message);
   }
 };
 
@@ -121,6 +128,14 @@ export const processAlertDirect = async ({ tx, result }) => {
     // Push alert via websocket
     const io = getIO();
     if (io) io.emit("new-alert", alert);
+
+    // Publish to Kafka topic fraud-alerts
+    try {
+      await producer.send({
+        topic: "fraud-alerts",
+        messages: [{ value: JSON.stringify(alert) }],
+      });
+    } catch (_) {}
   } catch (err) {
     console.error("❌ alertConsumer Error:", err);
   }
