@@ -1,0 +1,107 @@
+{
+  "banks": {
+    "BANK-A": {
+      "bankId": "BANK-A",
+      "bankName": "Apex National Bank",
+      "shortCode": "ANB",
+      "region": "IN-MH",
+      "totalTransactions": 12500,
+      "totalVolumeINR": 314203067.29,
+      "avgTransactionAmount": 25136.25,
+      "fraudCount": 1050,
+      "fraudRatio": 0.084,
+      "avgRiskScore": 24.5,
+      "channelBreakdown": {
+        "UPI": 5588,
+        "IMPS": 3125,
+        "NEFT": 2547,
+        "RTGS": 1240
+      },
+      "fraudPatternBreakdown": {
+        "CREDENTIAL_STUFFING_ATM": 227,
+        "HIGH_VALUE_OFFSHORE_SPIKE": 214,
+        "CROSS_BANK_MULE_HOP": 209,
+        "RAPID_VELOCITY_DRAIN": 208,
+        "STRUCTURING_SMURFING": 192
+      },
+      "crossBankCount": 4121,
+      "crossBankRatio": 0.3297,
+      "generatedAt": "2026-09-26T07:56:37.574960"
+    },
+    "BANK-B": {
+      "bankId": "BANK-B",
+      "bankName": "Bharat Financial Corp",
+      "shortCode": "BFC",
+      "region": "IN-DL",
+      "totalTransactions": 9800,
+      "totalVolumeINR": 190700769.37,
+      "avgTransactionAmount": 19459.26,
+      "fraudCount": 607,
+      "fraudRatio": 0.0619,
+      "avgRiskScore": 22.9,
+      "channelBreakdown": {
+        "UPI": 4903,
+        "IMPS": 3000,
+        "NEFT": 1366,
+        "RTGS": 531
+      },
+      "fraudPatternBreakdown": {
+        "RAPID_VELOCITY_DRAIN": 130,
+        "STRUCTURING_SMURFING": 127,
+        "CROSS_BANK_MULE_HOP": 123,
+        "HIGH_VALUE_OFFSHORE_SPIKE": 119,
+        "CREDENTIAL_STUFFING_ATM": 108
+      },
+      "crossBankCount": 3211,
+      "crossBankRatio": 0.3277,
+      "generatedAt": "2026-09-26T07:56:37.574960"
+    },
+    "BANK-C": {
+      "bankId": "BANK-C",
+      "bankName": "Coastal Trust Bank",
+      "shortCode": "CTB",
+      "region": "IN-KA",
+      "totalTransactions": 11200,
+      "totalVolumeINR": 241863850.7,
+      "avgTransactionAmount": 21594.99,
+      "fraudCount": 795,
+      "fraudRatio": 0.071,
+      "avgRiskScore": 23.3,
+      "channelBreakdown": {
+        "UPI": 4494,
+        "IMPS": 3872,
+        "NEFT": 1687,
+        "RTGS": 1147
+      },
+      "fraudPatternBreakdown": {
+        "RAPID_VELOCITY_DRAIN": 183,
+        "STRUCTURING_SMURFING": 167,
+        "HIGH_VALUE_OFFSHORE_SPIKE": 164,
+        "CREDENTIAL_STUFFING_ATM": 145,
+        "CROSS_BANK_MULE_HOP": 136
+      },
+      "crossBankCount": 3558,
+      "crossBankRatio": 0.3177,
+      "generatedAt": "2026-09-26T07:56:37.574960"
+    }
+  },
+  "global": {
+    "totalBankNodes": 3,
+    "totalFederatedRecords": 33500,
+    "totalFederatedVolumeINR": 746767687.36,
+    "totalFraudRecords": 2452,
+    "globalFraudRatio": 0.0732,
+    "testSetSize": 6000,
+    "featureColumns": [
+      "amount",
+      "oldbalanceOrg",
+      "newbalanceOrig",
+      "oldbalanceDest",
+      "newbalanceDest",
+      "is_cross_bank",
+      "channel_risk",
+      "velocity_score"
+    ],
+    "generatedAt": "2026-09-26T07:56:37.574960"
+  }
+}

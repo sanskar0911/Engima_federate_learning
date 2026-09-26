@@ -1,0 +1,31 @@
+# IBM Raw Dataset (17GB+)
+ibmfraud/
+**/ibmfraud/
+*.tar.gz
+*.zip
+
+# Environment & Credentials
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Dependencies & Build artifacts
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+dist/
+**/dist/
+build/
+**/build/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.tsbuildinfo
+*.log
+**/*.log
+.DS_Store
+Thumbs.db
