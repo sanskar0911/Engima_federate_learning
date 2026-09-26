@@ -86,42 +86,55 @@ export const simulateFederatedTrainingDirect = (options = {}) => {
   }, 1200);
 };
 
-export const processAlertDirect = async ({ tx, result }) => {
+export const processAlertDirect = async (input) => {
   try {
+    if (!input) return;
+
+    // Check if input is { tx, result } or already a formatted alert
+    const tx = input.tx || input;
+    const result = input.result || {};
+
+    const transactionId = tx.transactionId || input.transactionId || `TX-${Date.now()}`;
+    const accountId = tx.senderId || tx.accountId || input.accountId || "ACCOUNT-0";
+    const fraudScore = result.fraudScore ?? input.fraudScore ?? 90;
+    const riskLevel = result.riskLevel || input.riskLevel || "HIGH";
+    const reasons = result.reasons || input.reasons || [input.reason || "Laundering Pattern Detected"];
+    const status = (result.status === "BLOCKED" || input.status === "FRAUD" || riskLevel === "HIGH") ? "FRAUD" : "PENDING";
+
     // Save Alert in DB if connected
     let alert = {
-      _id: `alert-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      transactionId: tx.transactionId,
-      accountId: tx.senderId,
-      fraudScore: result.fraudScore,
-      riskLevel: result.riskLevel,
-      reasons: result.reasons,
-      status: result.status === "BLOCKED" ? "FRAUD" : "PENDING",
-      risk_breakdown: result.factors || [],
-      decision_result: {
+      _id: input._id || `alert-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      transactionId,
+      accountId,
+      fraudScore,
+      riskLevel,
+      reasons,
+      status,
+      risk_breakdown: result.factors || input.risk_breakdown || [],
+      decision_result: result.decisionId ? {
         status: result.status,
-        decisionId: result.decisionId
-      }
+        decisionId: result.decisionId,
+      } : (input.decision_result || {}),
     };
+
     try {
       alert = await Alert.create(alert);
     } catch (_) {}
 
-    console.log("🚨 FRAUD ALERT GENERATED:", alert.transactionId);
+    console.log("🚨 FRAUD ALERT PROCESSED:", alert.transactionId);
     
-    // Auto-create case if BLOCKED and HIGH risk
-    if (result.status === "BLOCKED" || result.riskLevel === "HIGH") {
+    // Auto-create case if BLOCKED or HIGH risk
+    if (status === "FRAUD" || riskLevel === "HIGH") {
       const caseId = `CASE-AUTO-${Date.now()}`;
       try {
         await InvestigationCase.create({
           caseId,
-          title: `Auto-investigation for Tx ${tx.transactionId}`,
+          title: `Auto-investigation for Tx ${transactionId}`,
           alertId: alert._id,
-          transactionId: tx.transactionId,
+          transactionId,
           status: "OPEN",
-          resolution: "PENDING"
+          resolution: "PENDING",
         });
-        console.log("📁 AUTO-CASE CREATED:", caseId);
       } catch (_) {}
     }
 
@@ -129,15 +142,17 @@ export const processAlertDirect = async ({ tx, result }) => {
     const io = getIO();
     if (io) io.emit("new-alert", alert);
 
-    // Publish to Kafka topic fraud-alerts
-    try {
-      await producer.send({
-        topic: "fraud-alerts",
-        messages: [{ value: JSON.stringify(alert) }],
-      });
-    } catch (_) {}
+    // Only publish to Kafka if this is the origin (called with { tx, result })
+    if (input.tx && input.result) {
+      try {
+        await producer.send({
+          topic: "fraud-alerts",
+          messages: [{ value: JSON.stringify(alert) }],
+        });
+      } catch (_) {}
+    }
   } catch (err) {
-    console.error("❌ alertConsumer Error:", err);
+    console.error("❌ alertConsumer Error:", err.message);
   }
 };
 
