@@ -1,0 +1,7 @@
+components/graph/fund-flow-graph.tsx(60,25): error TS2339: Property 'data' does not exist on type '{ nodes: any; edges: any; }'.
+components/graph/fund-flow-graph.tsx(60,50): error TS2339: Property 'data' does not exist on type '{ nodes: any; edges: any; }'.
+components/graph/fund-flow-graph.tsx(61,26): error TS2339: Property 'data' does not exist on type '{ nodes: any; edges: any; }'.
+components/graph/fund-flow-graph.tsx(243,9): error TS2322: Type 'any[]' is not assignable to type 'never[]'.
+  Type 'any' is not assignable to type 'never'.
+components/graph/fund-flow-graph.tsx(244,9): error TS2322: Type 'any[]' is not assignable to type 'never[]'.
+  Type 'any' is not assignable to type 'never'.

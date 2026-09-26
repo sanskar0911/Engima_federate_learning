@@ -1,0 +1,19 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+.next/
+dist/
+build/
+*.log
+*.zip
+.DS_Store
+*.tsbuildinfo
+package-lock.json
+# Actually, I will add recursive ignores for common folders
+**/node_modules/
+**/dist/
+**/build/
+**/.next/
+**/.env
+**/*.log
