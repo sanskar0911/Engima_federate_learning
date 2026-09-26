@@ -22,6 +22,8 @@ import {
   HeartPulse,
   Building2,
   Layers,
+  UploadCloud,
+  Mail,
 } from "lucide-react"
 
 import { useFederatedSocket } from "@/hooks/useFederatedSocket"
@@ -30,32 +32,35 @@ import { cn as cx } from "@/lib/utils"
 
 const navItems = [
   { href: "/",                 label: "Dashboard",             icon: LayoutDashboard, group: "main" },
-  { href: "/intra-bank-risk",   label: "Intra-Bank Risk (IBM)", icon: Building2,       group: "main" },
+  { href: "/tasks",            label: "User Analysis Tasks",   icon: Layers,          group: "main" },
   { href: "/transactions",     label: "Transactions",          icon: ArrowLeftRight,  group: "main" },
-  { href: "/fund-flow",        label: "Fund Flow",             icon: Network,         group: "main" },
+  { href: "/fund-flow",        label: "Fund Flow (5 Banks)",   icon: Network,         group: "main" },
+  { href: "/banks",            label: "5 Bank Node Profiles",  icon: Building2,       group: "main" },
+  { href: "/intra-bank-risk",   label: "Intra-Bank Risk (IBM)", icon: Building2,       group: "main" },
   { href: "/alerts",           label: "Alerts",                icon: AlertTriangle,   group: "main" },
   { href: "/investigation",    label: "Investigation",         icon: Search,          group: "main" },
 
   { href: "/federated",             label: "Federation Hub",         icon: Activity, group: "fed" },
   { href: "/federated/cross-bank",  label: "Cross-Bank Model (5 Wt)",icon: Cpu,      group: "fed" },
+  { href: "/live-events",           label: "Live System Events",     icon: Activity, group: "fed" },
   { href: "/federated/rounds",      label: "Rounds",                 icon: Layers,   group: "fed" },
-  { href: "/federated/models",      label: "Global Models",          icon: Database, group: "fed" },
-  { href: "/federated/privacy",     label: "Privacy Center",         icon: Lock,     group: "fed" },
-  { href: "/simulation",            label: "Simulation",             icon: Zap,      group: "fed" },
+  { href: "/federated/privacy",     label: "Privacy Center (DPDP)",  icon: Lock,     group: "fed" },
+  { href: "/simulation",            label: "Live Attack Stream",     icon: Zap,      group: "fed" },
 
-  { href: "/analytics", label: "Analytics",          icon: BarChart2,  group: "ops" },
-  { href: "/audit",     label: "Audit Log",          icon: ListChecks, group: "ops" },
-  { href: "/health",    label: "System Health",      icon: HeartPulse, group: "ops" },
-  { href: "/reports",   label: "Compliance Reports", icon: FileText,   group: "ops" },
-  { href: "/settings",  label: "Settings",           icon: Settings,   group: "ops" },
-  { href: "/login",     label: "Sign In / Register", icon: Shield,     group: "ops" },
+  { href: "/import",        label: "Dataset Ingestion",  icon: UploadCloud, group: "ops" },
+  { href: "/reports",       label: "Compliance Reports", icon: FileText,    group: "ops" },
+  { href: "/email-reports", label: "Email Dispatcher",   icon: Mail,        group: "ops" },
+  { href: "/analytics",     label: "Analytics & Telemetry",icon: BarChart2, group: "ops" },
+  { href: "/audit",         label: "Audit Trail",        icon: ListChecks,  group: "ops" },
+  { href: "/health",        label: "System Health",      icon: HeartPulse,  group: "ops" },
+  { href: "/settings",      label: "Settings",           icon: Settings,    group: "ops" },
+  { href: "/login",         label: "Switch Account",     icon: Shield,      group: "ops" },
 ]
 
-
 const GROUPS = [
-  { key: "main", label: "Operations" },
-  { key: "fed",  label: "Federated" },
-  { key: "ops",  label: "System" },
+  { key: "main", label: "Operations & Tasks" },
+  { key: "fed",  label: "Federated Learning" },
+  { key: "ops",  label: "System & Ingestion" },
 ]
 
 export function Sidebar() {

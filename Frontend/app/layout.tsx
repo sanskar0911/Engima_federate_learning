@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/react'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { TaskProvider } from '@/contexts/TaskContext'
 import { Toaster } from 'sonner'
 import './globals.css'
 
@@ -27,8 +28,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {children}
-            <Toaster />
+            <TaskProvider>
+              {children}
+              <Toaster />
+            </TaskProvider>
           </AuthProvider>
         </ThemeProvider>
         <Analytics />
